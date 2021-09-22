@@ -1,15 +1,13 @@
 var bulletTime1 = 0;
 
 var bullet_player1_material = new THREE.MeshLambertMaterial(
-{
-    color: 0x00ff00, 
-    transparent: false
-});
-
-function shoot()
-{
-    if (keyboard.pressed("space") && bulletTime1 + 0.8 < clock.getElapsedTime())
     {
+        color: 0x00ff00,
+        transparent: false
+    });
+
+function shoot() {
+    if (keyboard.pressed("space") && bulletTime1 + 0.8 < clock.getElapsedTime()) {
         bullet = new THREE.Mesh(
             new THREE.SphereGeometry(2),
             bullet_player1_material);
@@ -19,59 +17,74 @@ function shoot()
         bullet.angle = player1.direction;
         player1.bullets.push(bullet);
         bulletTime1 = clock.getElapsedTime();
-    } 
+    }
 
     // move bullets
     var moveDistance = 5;
 
-    for (var i = 0; i < player1.bullets.length; i++)
-    {
+    for (var i = 0; i < player1.bullets.length; i++) {
         player1.bullets[i].position.x += moveDistance * Math.cos(player1.bullets[i].angle);
         player1.bullets[i].position.y += moveDistance * Math.sin(player1.bullets[i].angle);
     }
 
 }
 
-function collisions()
-{
+function collisions() {
     bullet_collision();
     player_collision();
     player_falling();
+    bullet_collision_ennemy();
 }
 
-function bullet_collision()
-{
+function bullet_collision() {
     //collision between bullet and walls
-    for (var i = 0; i < player1.bullets.length; i++)
-    {
+    for (var i = 0; i < player1.bullets.length; i++) {
         if (Math.abs(player1.bullets[i].position.x) >= WIDTH / 2 ||
-            Math.abs(player1.bullets[i].position.y) >= HEIGHT / 2)
-        {
+            Math.abs(player1.bullets[i].position.y) >= HEIGHT / 2) {
             scene.remove(player1.bullets[i]);
             player1.bullets.splice(i, 1);
             i--;
         }
     }
-
 }
 
-function player_collision()
-{
+function bullet_collision_ennemy() {
+    //collision between bullet and ennemy
+    for (var i = 0; i < player1.bullets.length; i++) {
+        if (player1.bullets[i].position.x <= ennemy1.graphic.position.x + 10 &&
+            player1.bullets[i].position.y <= ennemy1.graphic.position.y + 10 &&
+            player1.bullets[i].position.x >= ennemy1.graphic.position.x - 10 &&
+            player1.bullets[i].position.y >= ennemy1.graphic.position.y - 10) {
+            ennemy1.life--;
+            if (ennemy1.life <= 0) {
+                ennemy1.graphic.position.x = 1000000;
+                ennemy1.graphic.position.y = 1000000;
+            }
+
+            scene.remove(player1.bullets[i]);
+            player1.bullets.splice(i, 1);
+            i--;
+        }
+    }
+}
+
+function player_collision() {
     //collision between player and walls
     var x = player1.graphic.position.x + WIDTH / 2;
     var y = player1.graphic.position.y + HEIGHT / 2;
 
-    if ( x > WIDTH )
+    if (x > WIDTH)
         player1.graphic.position.x -= x - WIDTH;
-    if ( y < 0 )
+    if (x < 0)
+        player1.graphic.position.x -= x;
+    if (y < 0)
         player1.graphic.position.y -= y;
-    if ( y > HEIGHT )
+    if (y > HEIGHT)
         player1.graphic.position.y -= y - HEIGHT;
 
 }
 
-function player_falling()
-{
+function player_falling() {
     var nb_tile = 10;
     var sizeOfTileX = WIDTH / nb_tile;
     var sizeOfTileY = HEIGHT / nb_tile;
@@ -82,19 +95,21 @@ function player_falling()
 
     for (var i = 0; i < length; i++) {
         element = noGround[i];
-
-        var tileX = (element[0]) | 0;
-        var tileY = (element[1]) | 0;
-        var mtileX = (element[0] + sizeOfTileX) | 0;
-        var mtileY = (element[1] + sizeOfTileY) | 0;
-
-        if ((x > tileX)
-            && (x < mtileX)
-            && (y > tileY) 
-            && (y < mtileY))
-        {
-           player1.dead();
+        if (element !== undefined) {
+            var tileX = (element[0]) | 0;
+            var tileY = (element[1]) | 0;
+            var mtileX = (element[0] + sizeOfTileX) | 0;
+            var mtileY = (element[1] + sizeOfTileY) | 0;
+            if ((x > tileX)
+                && (x < mtileX)
+                && (y > tileY)
+                && (y < mtileY)) {
+                player1.dead();
+            }
         }
+
+
+
     }
 
 }
